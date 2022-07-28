@@ -213,4 +213,6 @@ Bool D3DMaterialParticleChunk(d3d_render_chunk_new *pChunk);
 
 void SandstormInit(void);
 
+float CalculateYOffset(int sector_flags, room_contents_node *pRNode, long top, long bottom);
+
 #endif	// __D3DRENDER_H__

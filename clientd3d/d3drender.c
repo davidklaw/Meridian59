@@ -83,6 +83,7 @@ unsigned int gFrame = 0;
 int gScreenWidth;
 int gScreenHeight;
 int gCurBackground;
+float yOffset;
 
 D3DVERTEXELEMENT9 decl0[] = {
 	{0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0},
@@ -3423,7 +3424,7 @@ void D3DRenderNamesDraw3D(d3d_render_cache_system *pCacheSystem, d3d_render_pool
 	custom_xyz vector;
 	custom_st st[4];
 	custom_bgra bgra;
-	float lastDistance, width, height, x, z, depth, distance;
+	float lastDistance, width, height, x, z, distance;
 	char *pName, *ptr;
 	TCHAR c;
 	COLORREF fg_color;
@@ -3487,66 +3488,11 @@ void D3DRenderNamesDraw3D(d3d_render_cache_system *pCacheSystem, d3d_render_pool
 			continue;
 		}
 
-		// Set object depth based on "depth" sector flags
-		depth = sector_depths[SectorDepth(sector_flags)];
-		bool bUsingAlternateDepth = false; // Is kod overriding our depth?
-
-		if (ROOM_OVERRIDE_MASK & GetRoomFlags()) // if depth flags are normal (no overrides)
-		{
-			switch (SectorDepth(sector_flags))
-			{
-			case SF_DEPTH1:
-				if (ROOM_OVERRIDE_DEPTH1 & GetRoomFlags())
-				{
-					depth = GetOverrideRoomDepth(SF_DEPTH1);
-					bUsingAlternateDepth = true;
-				}
-				break;
-			case SF_DEPTH2:
-				if (ROOM_OVERRIDE_DEPTH2 & GetRoomFlags())
-				{
-					depth = GetOverrideRoomDepth(SF_DEPTH2);
-					bUsingAlternateDepth = true;
-				}
-				break;
-			case SF_DEPTH3:
-				if (ROOM_OVERRIDE_DEPTH3 & GetRoomFlags())
-				{
-					depth = GetOverrideRoomDepth(SF_DEPTH3);
-					bUsingAlternateDepth = true;
-				}
-				break;
-			}
-		}
-
-		//			z = ((float)pDib->height / (float)pDib->shrink * 16.0f) - (float)pDib->yoffset * 4.0f;
-
-		//			z += ((float)pRNode->boundingHeightAdjust * 4.0f);// / 1.66f;
-
 		MatrixRotateY(&rot, (float)angleHeading * 360.0f / 4096.0f * PI / 180.0f);
 		MatrixTranspose(&rot, &rot);
 
-		float yOffset = 0; // Calculate our overridden depth or height
-
-		if (pRNode->obj.flags & OF_HANGING)
-		{
-			yOffset = top - pRNode->obj.boundingHeight;
-		}
-		else if (bUsingAlternateDepth)
-		{
-			if (pRNode->obj.flags & OF_BOUNCING)
-			{
-				yOffset = (float)max(depth, pRNode->motion.z);
-			}
-			else
-			{
-				yOffset = depth;
-			}
-		}
-		else
-		{
-			yOffset = (float)max(bottom, pRNode->motion.z) - depth;
-		}
+		// Calculate our overridden depth or height
+		yOffset = CalculateYOffset(sector_flags, pRNode, top, bottom);
 
 		MatrixTranslate(&mat, (float)pRNode->motion.x, yOffset + (((float)pDib->height / (float)pDib->shrink * 16.0f) - (float)pDib->yoffset * 4.0f) + ((float)pRNode->boundingHeightAdjust * 4.0f), (float)pRNode->motion.y);
 		MatrixMultiply(&xForm, &rot, &mat);
@@ -6822,7 +6768,7 @@ void D3DRenderObjectsDraw(d3d_render_pool_new *pPool, room_type *room,
 	PDIB pDib;
 	custom_xyz xyz[4];
 	custom_bgra bgra;
-	float lastDistance, depth;
+	float lastDistance;
 	BYTE xLat0, xLat1;
 	int sector_flags;
 	long top, bottom;
@@ -6921,62 +6867,10 @@ void D3DRenderObjectsDraw(d3d_render_pool_new *pPool, room_type *room,
 			continue;
 		}
 
-		// Set object depth based on "depth" sector flags
-		depth = sector_depths[SectorDepth(sector_flags)];
-		bool bUsingAlternateDepth = false; // is kod overriding sector depth?
-
-		if (ROOM_OVERRIDE_MASK & GetRoomFlags()) // if depth flags are normal (no overrides)
-		{
-			switch (SectorDepth(sector_flags))
-			{
-			case SF_DEPTH1:
-				if (ROOM_OVERRIDE_DEPTH1 & GetRoomFlags())
-				{
-					depth = GetOverrideRoomDepth(SF_DEPTH1);
-					bUsingAlternateDepth = true;
-				}
-				break;
-			case SF_DEPTH2:
-				if (ROOM_OVERRIDE_DEPTH2 & GetRoomFlags())
-				{
-					depth = GetOverrideRoomDepth(SF_DEPTH2);
-					bUsingAlternateDepth = true;
-				}
-				break;
-			case SF_DEPTH3:
-				if (ROOM_OVERRIDE_DEPTH3 & GetRoomFlags())
-				{
-					depth = GetOverrideRoomDepth(SF_DEPTH3);
-					bUsingAlternateDepth = true;
-				}
-				break;
-			}
-		}
-
 		MatrixRotateY(&rot, (float)angleHeading * 360.0f / 4096.0f * PI / 180.0f);
 		MatrixTranspose(&rot, &rot);
 
-		float yOffset = 0; // Calculate our 'special' depth or height
-
-		if (pRNode->obj.flags & OF_HANGING)
-		{
-			yOffset = top - pRNode->obj.boundingHeight;
-		}
-		else if (bUsingAlternateDepth)
-		{
-			if (pRNode->obj.flags & OF_BOUNCING)
-			{
-				yOffset = max(depth, pRNode->motion.z);
-			}
-			else
-			{
-				yOffset = depth;
-			}
-		}
-		else
-		{
-			yOffset = max(bottom, pRNode->motion.z) - depth;
-		}
+		yOffset = CalculateYOffset(sector_flags, pRNode, top, bottom);
 
 		MatrixTranslate(&mat, (float)pRNode->motion.x, yOffset, (float)pRNode->motion.y);
 		MatrixMultiply(&pChunk->xForm, &rot, &mat);
@@ -7316,7 +7210,7 @@ void D3DRenderOverlaysDraw(d3d_render_pool_new *pPool, room_type *room, Draw3DPa
 	Overlay *pOverlay;
 	custom_xyz xyz[4];
 	custom_bgra bgra;
-	float lastDistance, invShrink, invOvShrink, invOv2Shrink, depthf;
+	float lastDistance, invShrink, invOvShrink, invOv2Shrink;
 	BYTE xLat0, xLat1, zBias;
 	int sector_flags;
 	Bool bHotspot;
@@ -7658,62 +7552,10 @@ void D3DRenderOverlaysDraw(d3d_render_pool_new *pPool, room_type *room, Draw3DPa
 						continue;
 					}
 
-					// Set object depth based on "depth" sector flags
-					depthf = sector_depths[SectorDepth(sector_flags)];
-					bool bUsingAlternateDepth = false; // Is kod overriding sector depth?
-
-					if (ROOM_OVERRIDE_MASK & GetRoomFlags()) // if depth flags are normal (no overrides)
-					{
-						switch (SectorDepth(sector_flags))
-						{
-						case SF_DEPTH1:
-							if (ROOM_OVERRIDE_DEPTH1 & GetRoomFlags())
-							{
-								depthf = GetOverrideRoomDepth(SF_DEPTH1);
-								bUsingAlternateDepth = true;
-							}
-							break;
-						case SF_DEPTH2:
-							if (ROOM_OVERRIDE_DEPTH2 & GetRoomFlags())
-							{
-								depthf = GetOverrideRoomDepth(SF_DEPTH2);
-								bUsingAlternateDepth = true;
-							}
-							break;
-						case SF_DEPTH3:
-							if (ROOM_OVERRIDE_DEPTH3 & GetRoomFlags())
-							{
-								depthf = GetOverrideRoomDepth(SF_DEPTH3);
-								bUsingAlternateDepth = true;
-							}
-							break;
-						}
-					}
-
 					MatrixRotateY(&rot, (float)angleHeading * 360.0f / 4096.0f * PI / 180.0f);
 					MatrixTranspose(&rot, &rot);
 
-					float yOffset = 0; // Calculate our 'special' depth or height
-
-					if (pRNode->obj.flags & OF_HANGING)
-					{
-						yOffset = top - pRNode->obj.boundingHeight;
-					}
-					else if (bUsingAlternateDepth)
-					{
-						if (pRNode->obj.flags & OF_BOUNCING)
-						{
-							yOffset = (float)max(depth, pRNode->motion.z);
-						}
-						else
-						{
-							yOffset = depthf;
-						}
-					}
-					else
-					{
-						yOffset = (float)max(bottom, pRNode->motion.z) - depthf;
-					}
+					yOffset = CalculateYOffset(sector_flags, pRNode, top, bottom);
 
 					MatrixTranslate(&mat, (float)pRNode->motion.x, yOffset, (float)pRNode->motion.y);
 					MatrixMultiply(&pChunk->xForm, &rot, &mat);
@@ -10504,4 +10346,63 @@ float D3DRenderFogEndCalc(d3d_render_chunk_new *pChunk)
 			   (current_room.ambient_light * FINENESS));
 
 	return end;
+}
+
+float CalculateYOffset(int sector_flags, room_contents_node *pRNode, long top, long bottom)
+{
+	float yOffset = 0; // Calculate our overridden depth or height
+
+	// Set object depth based on "depth" sector flags
+	float depth = sector_depths[SectorDepth(sector_flags)];
+	Bool bUsingAlternateDepth = FALSE; // Is kod overriding our depth?
+
+	if (ROOM_OVERRIDE_MASK & GetRoomFlags()) // if depth flags are normal (no overrides)
+	{
+		switch (SectorDepth(sector_flags))
+		{
+		case SF_DEPTH1:
+			if (ROOM_OVERRIDE_DEPTH1 & GetRoomFlags())
+			{
+				depth = GetOverrideRoomDepth(SF_DEPTH1);
+				bUsingAlternateDepth = TRUE;
+			}
+			break;
+		case SF_DEPTH2:
+			if (ROOM_OVERRIDE_DEPTH2 & GetRoomFlags())
+			{
+				depth = GetOverrideRoomDepth(SF_DEPTH2);
+				bUsingAlternateDepth = TRUE;
+			}
+			break;
+		case SF_DEPTH3:
+			if (ROOM_OVERRIDE_DEPTH3 & GetRoomFlags())
+			{
+				depth = GetOverrideRoomDepth(SF_DEPTH3);
+				bUsingAlternateDepth = TRUE;
+			}
+			break;
+		}
+	}
+	
+	if (pRNode->obj.flags & OF_HANGING)
+	{
+		yOffset = top - pRNode->obj.boundingHeight;
+	}
+	else if (bUsingAlternateDepth)
+	{
+		if (pRNode->obj.flags & OF_BOUNCING)
+		{
+			yOffset = (float)max(depth, pRNode->motion.z);
+		}
+		else
+		{
+			yOffset = depth;
+		}
+	}
+	else
+	{
+		yOffset = (float)max(bottom, pRNode->motion.z) - depth;
+	}
+	
+	return yOffset;
 }
