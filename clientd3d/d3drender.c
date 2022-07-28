@@ -10348,15 +10348,22 @@ float D3DRenderFogEndCalc(d3d_render_chunk_new *pChunk)
 	return end;
 }
 
+/************************************************************************/
+/*
+ * CalculateYOffset: Calculates and returns the yOffset taking into
+ * consideration whether the object is OF_HANGING or OF_BOUNCING type.
+ *
+ */
 float CalculateYOffset(int sector_flags, room_contents_node *pRNode, long top, long bottom)
 {
-	float yOffset = 0; // Calculate our overridden depth or height
+	// true if kod provides alternate depths via viOverrideDepth1/2/3
+	Bool bUsingAlternateDepth = false;
 
-	// Set object depth based on "depth" sector flags
+	// Set object depth based on depth sector flags
 	float depth = sector_depths[SectorDepth(sector_flags)];
-	Bool bUsingAlternateDepth = FALSE; // Is kod overriding our depth?
 
-	if (ROOM_OVERRIDE_MASK & GetRoomFlags()) // if depth flags are normal (no overrides)
+	// If a room depth override is present, update depth at which object will render
+	if (ROOM_OVERRIDE_MASK & GetRoomFlags())
 	{
 		switch (SectorDepth(sector_flags))
 		{
@@ -10364,26 +10371,29 @@ float CalculateYOffset(int sector_flags, room_contents_node *pRNode, long top, l
 			if (ROOM_OVERRIDE_DEPTH1 & GetRoomFlags())
 			{
 				depth = GetOverrideRoomDepth(SF_DEPTH1);
-				bUsingAlternateDepth = TRUE;
+				bUsingAlternateDepth = true;
 			}
 			break;
 		case SF_DEPTH2:
 			if (ROOM_OVERRIDE_DEPTH2 & GetRoomFlags())
 			{
 				depth = GetOverrideRoomDepth(SF_DEPTH2);
-				bUsingAlternateDepth = TRUE;
+				bUsingAlternateDepth = true;
 			}
 			break;
 		case SF_DEPTH3:
 			if (ROOM_OVERRIDE_DEPTH3 & GetRoomFlags())
 			{
 				depth = GetOverrideRoomDepth(SF_DEPTH3);
-				bUsingAlternateDepth = TRUE;
+				bUsingAlternateDepth = true;
 			}
 			break;
 		}
 	}
-	
+
+	// Offset equal to ceiling, if hanging
+	// Offset equal to alternate depth, if present (e.g. Riija bridge vs. ground below)
+	// Offset equal to default depth, if nothing else
 	if (pRNode->obj.flags & OF_HANGING)
 	{
 		yOffset = top - pRNode->obj.boundingHeight;
@@ -10403,6 +10413,6 @@ float CalculateYOffset(int sector_flags, room_contents_node *pRNode, long top, l
 	{
 		yOffset = (float)max(bottom, pRNode->motion.z) - depth;
 	}
-	
+
 	return yOffset;
 }
