@@ -91,8 +91,8 @@ messages:
          school = random(1,6); 
       }
       
-      send(self,@SetSchool,#school=school);
-      send(self,@SetXLATTranslation,#translation=viXLAT_no_knowledge);
+      Send(self,@SetSchool,#school=school);
+      Send(self,@SetRobeColor);
       
       propagate;
    }
@@ -208,38 +208,44 @@ messages:
       % Okay, it's above level four.  Let's be school specific, shall we?
       if iHigh_level > 4
       {
-         if piSchool = SS_JALA
-         {
-            send(self,@SetXLATTranslation,#translation=viXLAT_jala_master);         
-         }
-         
-         if piSchool = SS_FAREN
-         {
-            send(self,@SetXLATTranslation,#translation=viXLAT_faren_master);            
-         }
-         
-         if piSchool = SS_KRAANAN
-         {
-            send(self,@SetXLATTranslation,#translation=viXLAT_kraanan_master);
-         }
-         
-         if piSchool = SS_SHALILLE
-         {
-            send(self,@SetXLATTranslation,#translation=viXLAT_shalille_master);
-         }
-         
-         if piSchool = SS_QOR
-         {
-            send(self,@SetXLATTranslation,#translation=viXLAT_qor_master);            
-         }
-         
-         if piSchool = SS_RIIJA
-         {
-            send(self,@SetXLATTranslation,#translation=viXLAT_riija_master);         
-         }
+         Send(self,@SetRobeColor);
       }
       
       return;
+   }
+
+   SetRobeColor()
+   "Sets robe color based on robe's school"
+   {
+      if piSchool = SS_JALA
+      {
+         send(self,@SetXLATTranslation,#translation=viXLAT_jala_master);         
+      }
+      
+      if piSchool = SS_FAREN
+      {
+         send(self,@SetXLATTranslation,#translation=viXLAT_faren_master);            
+      }
+      
+      if piSchool = SS_KRAANAN
+      {
+         send(self,@SetXLATTranslation,#translation=viXLAT_kraanan_master);
+      }
+      
+      if piSchool = SS_SHALILLE
+      {
+         send(self,@SetXLATTranslation,#translation=viXLAT_shalille_master);
+      }
+      
+      if piSchool = SS_QOR
+      {
+         send(self,@SetXLATTranslation,#translation=viXLAT_qor_master);            
+      }
+      
+      if piSchool = SS_RIIJA
+      {
+         send(self,@SetXLATTranslation,#translation=viXLAT_riija_master);         
+      }
    }
 
    ReqUse()
