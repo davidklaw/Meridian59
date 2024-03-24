@@ -347,8 +347,8 @@ resources:
    player_cant_dance_resting = \
       "You're sitting right now.  Let's not take this \'getting down\' stuff "
       "too literally, ok?"
-   player_stop_dance = "\
-      You lose your rhythm and settle out of your dancing frenzy." 
+   player_stop_dance = \
+      "You lose your rhythm and settle out of your dancing frenzy." 
 
    player_wave = "You wave your hand."
    player_point = "You point."
@@ -4472,14 +4472,6 @@ messages:
          damage = 1;
       }
 
-      if damage > 0
-      {
-         if Send(self,@CheckPlayerFlag,#flag=PFLAG2_PARALYZED,#flagset=2)
-         {
-            Send(self,@RemoveEnchantment,#what=Send(SYS,@FindSpellByNum,#num=SID_PARALYZE));
-         }
-      }
-
       if NOT absolute
       {
          % If we have more health than twice our max, no percent limit on damage.
@@ -6795,7 +6787,7 @@ messages:
 %  (which clearly doesn't belong in player; should be in the spell itself) to
 %  make it buyable.  - ARK 10/26/2010
 %
-%      if num = SID_DEATHS_DOOR
+%      if num = SID_SHADOW_RIFT
 %          AND ((NOT Send(self, @IsUsingA,#class=&NecromancerAmulet))
 %               AND (NOT IsClass(self,&Admin)))
 %      {
@@ -9902,7 +9894,11 @@ messages:
       return;
    }
 
-   BreakTrance(event = 0, what = $)
+   BreakTrance(event = 0, castwhat = $, usewhat = $)
+   "Sends a BreakTrance message to any trance-holding enchantments."
+   "The event is the action causing the broken trance."
+   "If the event is the player casting a spell then castwhat is that spell object."
+   "If the event is the player using an item than usewhat is that item object."
    {
       local i, oEnch,state, bFound, oYellNum, oYellRoom;
 
@@ -9917,8 +9913,7 @@ messages:
             {
                state = Nth(i,3);
             }
-
-            Send(oEnch,@BreakTrance,#who=self,#state=state,#event=event,#what=what);
+            Send(oEnch,@BreakTrance,#who=self,#state=state,#event=event,#castwhat=castwhat,#usewhat=usewhat);
             bFound = TRUE;
          }
       }
@@ -9937,7 +9932,7 @@ messages:
          }
       }
       
-      if Send(poOwner,@BreakTrance,#who=self,#event=event)
+      if Send(poOwner,@BreakTrance,#who=self,#event=event,#castwhat=castwhat,#usewhat=usewhat)
       {
          bFound = TRUE;
       }
@@ -9991,7 +9986,7 @@ messages:
       }
       
       iState = Send(self,@GetEnchantedState,
-                    #what=Send(SYS,@FindSpellByNum,#num=SID_NIGHTVISION));
+                    #what=Send(SYS,@FindSpellByNum,#num=SID_NIGHT_VISION));
       if iState <> $
       {
          iLight = iLight + iState;

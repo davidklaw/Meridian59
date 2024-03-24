@@ -247,7 +247,7 @@ resources:
    user_goto_jail = "You have been thrown in the Barloque Jail!"
    user_last_known = "the last known location of "
 
-   user_school_shallile = "School of Shal'ille"
+   user_school_shalille = "School of Shal'ille"
    user_school_qor = "School of Qor"
    user_school_kraanan = "School of Kraanan"
    user_school_faren = "School of Faren"
@@ -794,7 +794,9 @@ messages:
          AddPacket(1,BP_PLAYER_ADD);
          AddPacket(4,what,4,rName);
          AddPacket(STRING_RESOURCE,rName);
-         AddPacket(4,Send(what,@GetObjectFlags));
+         % Clear the DRAWFX_INVISIBLE flag of which DRAWFX_BLACK is a subset
+         % so the who list dialog box does not color shadowformed names black 
+         AddPacket(4,Send(what,@GetObjectFlags) & ~DRAWFX_INVISIBLE);
          SendPacket(poSession);
 
          if IsClass(self,&Admin) AND IsClass(what,&Admin)
@@ -2518,7 +2520,9 @@ messages:
          rName = Send(i,@GetTrueName);
 
          AddPacket(4,i, 4,rName, STRING_RESOURCE,rName);
-         AddPacket(4,Send(i,@GetObjectFlags));
+         % Clear the DRAWFX_INVISIBLE flag of which DRAWFX_BLACK is a subset
+         % so the who list dialog box does not color shadowformed names black 
+         AddPacket(4,Send(i,@GetObjectFlags) & ~DRAWFX_INVISIBLE);
       }
       
       SendPacket(poSession);
@@ -2731,7 +2735,7 @@ messages:
       }
       
       AddPacket(1,num_schools);
-      AddPacket(4,user_school_shallile);
+      AddPacket(4,user_school_shalille);
       AddPacket(4,user_school_qor);
       AddPacket(4,user_school_kraanan);
       AddPacket(4,user_school_faren);
@@ -4549,7 +4553,7 @@ messages:
 
       if piFlags & PFLAG_TRANCE
       {
-         Send(self,@BreakTrance,#event=EVENT_USE);
+         Send(self,@BreakTrance,#event=EVENT_USE,#usewhat=what);
       }
       
       if NOT IsClass(what,&Item) 
@@ -4573,7 +4577,7 @@ messages:
 
       if piFlags & PFLAG_TRANCE
       {
-         Send(self,@BreakTrance,#event=EVENT_USE);
+         Send(self,@BreakTrance,#event=EVENT_USE,#usewhat=what);
       }
 
       if not IsClass(what,&Item)
@@ -4699,7 +4703,7 @@ messages:
 
       if piFlags & PFLAG_TRANCE
       {
-         Send(self,@BreakTrance,#event=EVENT_CAST,#what=oSpell);
+         Send(self,@BreakTrance,#event=EVENT_CAST,#castwhat=oSpell);
       }
 
       if Send(self,@CheckPlayerFlag,#flag=PFLAG_NO_MAGIC)
@@ -4772,7 +4776,7 @@ messages:
       % If a player is in a trance, break it
       if piFlags & PFLAG_TRANCE
       {
-         Send(self,@BreakTrance,#event=EVENT_CAST,#what=oCommand);
+         Send(self,@BreakTrance,#event=EVENT_CAST,#castwhat=oCommand);
       }
 
       % Be sure player has guild command.
@@ -5772,7 +5776,7 @@ messages:
    {
       if (piFlags & PFLAG_TRANCE)
       {
-         Send(self,@BreakTrance,#event=EVENT_USE);
+         Send(self,@BreakTrance,#event=EVENT_USE,#usewhat=what);
       }
 
       if NOT IsClass(what,&Item) 

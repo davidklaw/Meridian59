@@ -701,7 +701,7 @@ messages:
    {
       local oSpell, oCaster;
 
-      oSpell = Send(SYS,@FindSpellByNum,#Num=SID_DEATHLINK);
+      oSpell = Send(SYS,@FindSpellByNum,#Num=SID_DEATH_LINK);
 
       if Send(self,@IsEnchanted,#what=oSpell)
       {
@@ -1685,6 +1685,13 @@ messages:
          return;
       }
 
+		% Guard against admin mode mistakes
+		if what = self
+		{
+			Debug("Tried to have room hold itself!");
+			return;
+	   }
+		
       bUser = IsClass(what,&User);
 
       if new_row = $ OR new_col = $ OR fine_row = $ OR fine_col = $
@@ -3244,7 +3251,7 @@ messages:
       return viTerrain_Type;
    }
 
-   BreakTrance(who=$, event=$)
+   BreakTrance(who=$, event=$, castwhat=$, usewhat=$)
    {
       local i, oEnch, lState, bRetVal;
 
@@ -3258,8 +3265,7 @@ messages:
             lState = Nth(i,3);
             if who = Nth(lState,2)
             {
-               bRetVal = Send(oEnch,@BreakTrance,#who=who,#event=event,
-                              #state=lState,#location=self);
+               bRetVal = Send(oEnch,@BreakTrance,#who=who,#event=event,#state=lState,#castwhat=castwhat,#usewhat=usewhat);
             }
          }
 
@@ -3270,8 +3276,7 @@ messages:
             lState = Nth(i,3);
             if who = First(lState)
             {
-               bRetVal = Send(oEnch,@BreakTrance,#who=who,#event=event,
-                              #state=lState,#location=self);
+               bRetVal = Send(oEnch,@BreakTrance,#who=who,#event=event,#state=lState,#location=self,#castwhat=castwhat);
             }
          }
       }
