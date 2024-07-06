@@ -73,15 +73,16 @@ PALETTEFILE = $(TOPDIR)\blakston.pal
 # /wd4996  disables warning (deprecated function called)
 # /wd4312  disables warning (cast 32-bit value to 64-bit pointer)
 # /MP enables parallel compiling
+# /Zi includes debugging information
 
 CCOMMONFLAGS = -nologo -DBLAK_PLATFORM_WINDOWS -DWIN32 \
              /wd4996 /wd4312 \
-	     -TP -WX -GR- -EHsc- -MP
+	     -TP -WX -GR- -EHsc- -MP -Zi /arch:SSE
 
 CNORMALFLAGS = $(CCOMMONFLAGS) -W2 /Ox
-CDEBUGFLAGS = $(CCOMMONFLAGS) -Zi -W3 -DBLAKDEBUG
+CDEBUGFLAGS = $(CCOMMONFLAGS) -W3 -DBLAKDEBUG
 CNODEBUGFLAGS = $(CCOMMONFLAGS) -W2 -DBLAKDEBUG
-LINKNORMALFLAGS =/release
+LINKNORMALFLAGS =/release /debug
 LINKDEBUGFLAGS = /debug
 LINKNODEBUGFLAGS =
 LINKCONSOLEFLAGS = -subsystem:console

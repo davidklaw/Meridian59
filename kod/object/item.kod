@@ -354,6 +354,11 @@ messages:
       return iFinal;
    }
 
+   GetItemAttributes()
+   {
+      return plItem_Attributes;
+   }
+
    GetMaxHits()
    {
       return piHits_init;
@@ -705,7 +710,6 @@ messages:
    "Returns a rarity grade based on the sum of the total and the "
    "item's class-based viRarity value."
    {
-
       local i, iNum, oItemAtt, count;
       count = 0;
 
