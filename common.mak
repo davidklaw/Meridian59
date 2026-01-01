@@ -2,9 +2,9 @@
 
 # defining RELEASE compiles optimized
 # defining NODEBUG omits debugging information
-# defining FINAL implies release, and also removes debugging strings from client executable 
+# defining RETAIL implies release, and also removes debugging strings from client executable 
 
-!ifdef FINAL
+!ifdef RETAIL
 RELEASE = 1
 NODPRINTFS = 1
 !endif
@@ -44,10 +44,10 @@ CLUBDIR     = $(TOPDIR)\club
 
 # 3rd party libraries
 EXTERNALDIR = $(TOPDIR)\external
-WAVEMIXDIR  = $(EXTERNALDIR)\wavemix
 LIBARCHIVEDIR = $(EXTERNALDIR)\libarchive
 LIBPNGDIR   = $(EXTERNALDIR)\libpng
 ZLIBDIR     = $(EXTERNALDIR)\zlib
+OPENALDIR   = $(EXTERNALDIR)\openal-soft\openal-soft-1.24.3-bin
 
 BLAKBINDIR = $(TOPDIR)\bin
 BLAKLIBDIR = $(TOPDIR)\lib
@@ -131,4 +131,4 @@ MAKEBGF = $(BLAKBINDIR)\makebgf
 # environment variables for compiler
 
 LIB = $(LIB);$(BLAKLIBDIR)
-INCLUDE = $(INCLUDE);$(BLAKINCLUDEDIR);$(LIBARCHIVEDIR);$(LIBPNGDIR);$(ZLIBDIR)
+INCLUDE = $(INCLUDE);$(BLAKINCLUDEDIR);$(LIBARCHIVEDIR);$(LIBPNGDIR);$(ZLIBDIR);$(OPENALDIR)\include
