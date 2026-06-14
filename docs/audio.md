@@ -86,7 +86,10 @@ graph TD
 | `MusicSetVolume(volume)` | Set music volume (0.0 - 1.0) |
 | `SoundPlay(filename, volume, flags, ...)` | Play sound effect with optional 3D positioning |
 | `SoundStopAll()` | Stop all sound effects |
+| `SoundStopLooping()` | Stop only `SF_LOOP` sources (used when Steady Sounds is unchecked) |
+| `ResetSoundVolume()` | Re-apply Sound and Ambient sliders to every currently-playing source |
 | `AudioUpdateListener(x, y, z, ...)` | Update listener position for 3D audio |
+| `AudioUpdateTrackedSources()` | Refresh positions of sources attached to moving game objects |
 
 ### Music API (music.c)
 
@@ -266,6 +269,23 @@ All audio positioning uses **tile coordinates** (coarse grid), not fine coordina
 
 The listener position is updated each frame via `AudioUpdateListener()`.
 
+### Sources Attached to Moving Objects
+
+When a sound is started for a specific game object (a monster, a player, a projectile owner), `GamePlaySound` forwards the object's `source_obj` ID all the way down to `SoundPlay`. If the resulting source is positional, the audio layer registers it in a small `g_trackedSources` table.
+
+Each frame `UpdateLoopingSounds()` calls `AudioUpdateTrackedSources()`, which drops entries whose source has stopped (one-shots clean themselves up as they finish playing), looks up the object via `GetRoomObjectById`, and refreshes `AL_POSITION` from the object's current `motion.x/y` so the sound follows the object as it moves.
+
+#### Untrack on missing object
+
+If the object lookup fails, the entry is dropped from the tracker but the source is left playing at its last position. This is intentional. Object IDs can become temporarily unreachable when the server renumbers room contents (for example during a system save), even though the same prop is still present under a new ID. Stopping the source on every miss would briefly silence fountains, fire pits, and other looping world audio every save.
+
+Edge cases worth noting:
+- One-shots play to completion. The source finishes naturally and the next frame removes it via the "source no longer playing" branch.
+- After a renumber, the server resends `BK_PLAY_WAVE` for the same prop with its new ID. For looping sounds, `SoundPlay` notices the WAV is already playing on a source and returns early without starting a duplicate, so there is no overlap. The existing loop keeps playing at its last position and is no longer tracked, which is fine for stationary props (fountains, fire pits). A moving object with a loop would stop following until the next room transition clears state.
+- Genuine "this sound should stop" still flows through the server sending an explicit stop, which `Audio_StopSourcesForFilename` honors. Looping sources are also bounded by `SoundStopAll` on room transitions.
+
+Without this, a sound emitted by a moving object stays anchored at the spot where the sound first started, regardless of where the object is now. Sounds started with `source_obj == 0` (UI sounds, fixed-position room emitters such as fountains and firepits) are never registered and remain at their initial position.
+
 ## Audio File Guidelines
 
 When adding new sound files to the game, follow these guidelines for optimal playback:
@@ -298,10 +318,30 @@ Audio settings in `meridian.ini`:
 
 ```ini
 [Meridian]
-MusicVolume=40      ; 0-100
-SoundVolume=99      ; 0-100
-AmbientVolume=100   ; 0-100 (looping/3D sounds)
+MusicVolume=100      ; 0-100
+SoundVolume=100      ; 0-100 (one-shot effects: combat, spells, doors, scream)
+AmbientVolume=100   ; 0-100 (looping environmental emitters: fountain, firepit)
 ```
+
+### Volume routing
+
+The two volume sliders are selected purely by the `SF_LOOP` flag on the sound, regardless of whether the sound is positional (3D) or non-positional (centered):
+
+| Sound type | Examples | Slider |
+|------------|----------|--------|
+| `SF_LOOP` (looping) | Fountain, firepit, forge, future torches/braziers | Ambient |
+| One-shot | Combat hits, spell impacts, doors, death scream, scripted effects | Sound |
+
+The `Steady Sounds` checkbox is a master toggle for `SF_LOOP` sounds; the `Atmospheric Sounds` checkbox toggles `SF_RANDOM_PLACE` sounds (server-picked random ambient one-shots).
+
+### Live slider updates
+
+All three volume sliders (`Music`, `Sound`, `Ambient`) take effect immediately when the player clicks OK in the Options dialog.  No re-login or room change is required.
+
+- `ResetMusicVolume()` re-applies the music slider to the live music source
+- `ResetSoundVolume()` re-applies the sound and ambient sliders to every currently-playing source.  Each source records two pieces of state at `SoundPlay` time in a `SourceState` struct (one entry per source pool slot): the pre-slider gain (from `max_vol` / `volume`) and a flag indicating whether it is a loop.  On refresh, gain is recomputed as `pre-slider gain * current slider`, where the slider is `Ambient` for loops and `Sound` for one-shots
+- Unchecking `Steady Sounds` calls `SoundStopLooping()` to stop loops that are already playing.  Re-checking it does not restart them; the server only sends loop packets on room entry, so loops resume on the next room change
+- Unchecking `Atmospheric Sounds` needs no immediate action; the gated one-shot sounds finish on their own within a few seconds
 
 ## HRTF and Surround Sound
 

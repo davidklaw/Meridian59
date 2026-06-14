@@ -23,7 +23,7 @@ LIBS =  \
 	ws2_32.lib comctl32.lib advapi32.lib \
 	winmm.lib libarchive.lib rscload.lib wininet.lib \
 	ole32.lib OpenAL32.lib \
-	d3d9.lib libpng.lib zlib.lib
+	d3d9.lib libpng.lib zlib.lib dwmapi.lib
 
 # Setting RETAIL=1 includes Bugsplat; not needed for development
 !ifdef RETAIL
@@ -144,6 +144,7 @@ OBJS = \
         $(OUTDIR)\d3drender_skybox.obj \
         $(OUTDIR)\d3drender_textures.obj \
         $(OUTDIR)\d3drender_world.obj \
+        $(OUTDIR)\skybox_load.obj \
         $(OUTDIR)\matrix.obj \
         $(OUTDIR)\xform.obj \
         $(OUTDIR)\signup.obj\

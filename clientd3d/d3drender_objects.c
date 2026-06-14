@@ -170,7 +170,7 @@ long D3DRenderObjects(
 	int angleHeading = objectsRenderParams.params->viewer_angle + 3 * NUMDEGREES / 4;
 	if (angleHeading >= NUMDEGREES)
 		angleHeading -= NUMDEGREES;
-	float theta = (float)angleHeading * (2.0f * PI / (float)NUMDEGREES);
+	float theta = static_cast<float>(angleHeading) * GAME_ANGLE_TO_RAD;
 	float fwdX = sinf(theta);
 	float fwdY = cosf(theta);
 
@@ -250,10 +250,26 @@ long D3DRenderObjects(
 	D3DCacheFill(objectsRenderParams.cacheSystem, objectsRenderParams.renderPool, 1);
 	D3DCacheFlush(objectsRenderParams.cacheSystem, objectsRenderParams.renderPool, 1, D3DPT_TRIANGLESTRIP);
 
-	SetZBias(gpD3DDevice, ZBIAS_DEFAULT);
+	SetZBias(ZBIAS_DEFAULT);
 
-	D3DRenderFramebufferTextureCreate(gameObjectDataParams.backBufferTexFull, gameObjectDataParams.backBufferTex[0],
-		fontTextureParams.smallTextureSize, fontTextureParams.smallTextureSize);
+	IDirect3DDevice9_SetVertexShader(gpD3DDevice, NULL);
+	IDirect3DDevice9_SetVertexDeclaration(gpD3DDevice, objectsRenderParams.vertexDeclaration);
+
+	return timeGetTime() - timeObjects;
+}
+
+void D3DRenderInvisiblePass(
+	const ObjectsRenderParams& objectsRenderParams,
+	const GameObjectDataParams& gameObjectDataParams,
+	const LightAndTextureParams& lightAndTextureParams,
+	const PlayerViewParams& playerViewParams)
+{
+	// Capture the back buffer AFTER translucent walls have been drawn so the
+	// invisible-object fishbowl effect samples a scene that includes those
+	// walls. If the capture happens before the wall pass, invisible characters
+	// and the local player's held overlays read pre-wall colours and visually
+	// erase translucent walls wherever they overlap.
+	D3DRender_CaptureEffect(gameObjectDataParams.backBufferTexFull, gameObjectDataParams.backBufferTex[0]);
 
 	IDirect3DDevice9_SetTransform(gpD3DDevice, D3DTS_VIEW, &objectsRenderParams.view);
 	IDirect3DDevice9_SetTransform(gpD3DDevice, D3DTS_PROJECTION, &objectsRenderParams.proj);
@@ -263,6 +279,10 @@ long D3DRenderObjects(
 	IDirect3DDevice9_SetVertexDeclaration(gpD3DDevice, objectsRenderParams.vertexDeclarationInvisible);
 
 	D3DRender_SetAlphaBlendState(TRUE, D3DBLEND_SRCALPHA, D3DBLEND_INVSRCALPHA);
+	IDirect3DDevice9_SetRenderState(gpD3DDevice, D3DRS_ZWRITEENABLE, FALSE);
+
+	// Restore CULL_NONE for the invisible pass.
+	IDirect3DDevice9_SetRenderState(gpD3DDevice, D3DRS_CULLMODE, D3DCULL_NONE);
 
 	// Render invisible world objects
 	D3DRenderPoolReset(objectsRenderParams.renderPool, &D3DMaterialObjectInvisiblePool);
@@ -304,7 +324,7 @@ long D3DRenderObjects(
 	IDirect3DDevice9_SetVertexShader(gpD3DDevice, NULL);
 	IDirect3DDevice9_SetVertexDeclaration(gpD3DDevice, objectsRenderParams.vertexDeclaration);
 
-	return timeGetTime() - timeObjects;
+	IDirect3DDevice9_SetRenderState(gpD3DDevice, D3DRS_ZWRITEENABLE, TRUE);
 }
 
 /**
@@ -410,7 +430,7 @@ void D3DRenderNamesDraw3D(
 			}
 		}
 
-		MatrixRotateY(&rot, (float)angleHeading * 360.0f / (float)NUMDEGREES * PI / 180.0f);
+		MatrixRotateY(&rot, static_cast<float>(angleHeading) * GAME_ANGLE_TO_RAD);
 		MatrixTranspose(&rot, &rot);
 		MatrixTranslate(&mat, (float)pRNode->motion.x, (float)std::max(bottom,
 			(long)pRNode->motion.z) - depth +
@@ -637,7 +657,7 @@ void D3DRenderOverlaysDraw(
 
 	const auto* player = GetPlayerInfo();;
 
-	angleHeading = objectsRenderParams.params->viewer_angle + 3 * NUMDEGREES / 4;
+	angleHeading = objectsRenderParams.params->viewer_angle + LEGACY_HEADING_OFFSET;
 	if (angleHeading >= NUMDEGREES)
 		angleHeading -= NUMDEGREES;
 
@@ -1008,7 +1028,7 @@ void D3DRenderOverlaysDraw(
 						}
 					}
 
-					MatrixRotateY(&rot, (float)angleHeading * 360.0f / (float)NUMDEGREES * PI / 180.0f);
+					MatrixRotateY(&rot, static_cast<float>(angleHeading) * GAME_ANGLE_TO_RAD);
 					MatrixTranspose(&rot, &rot);
 					MatrixTranslate(&mat, (float)pRNode->motion.x, (float)std::max(bottom,
 						(long)pRNode->motion.z) - depthf, (float)pRNode->motion.y);
@@ -1104,8 +1124,8 @@ void D3DRenderOverlaysDraw(
 						bottomRight.z = 0;
 						bottomRight.w = 1.0f;
 
-						MatrixRotateY(&rot, (float)angleHeading * 360.0f / (float)NUMDEGREES * PI / 180.0f);
-						MatrixRotateX(&mat, (float)anglePitch * 50.0f / 414.0f * PI / 180.0f);
+						MatrixRotateY(&rot, static_cast<float>(angleHeading) * GAME_ANGLE_TO_RAD);
+						MatrixRotateX(&mat, static_cast<float>(anglePitch) * Y_UNIT_TO_OBJECT_PITCH_RAD);
 						MatrixMultiply(&rot, &rot, &mat);
 						MatrixTranslate(&trans, -(float)objectsRenderParams.params->viewer_x, 
 							-(float)objectsRenderParams.params->viewer_height, -(float)objectsRenderParams.params->viewer_y);
@@ -1514,7 +1534,7 @@ void D3DRenderObjectsDraw(
 			}
 		}
 
-		MatrixRotateY(&rot, (float)angleHeading * 360.0f / (float)NUMDEGREES * PI / 180.0f);
+		MatrixRotateY(&rot, static_cast<float>(angleHeading) * GAME_ANGLE_TO_RAD);
 		MatrixTranspose(&rot, &rot);
 		MatrixTranslate(&mat, (float)pRNode->motion.x, std::max(bottom, (long)pRNode->motion.z) - depth,
 			(float)pRNode->motion.y);
@@ -1651,8 +1671,8 @@ void D3DRenderObjectsDraw(
 			bottomRight.z = 0;
 			bottomRight.w = 1.0f;
 
-			MatrixRotateY(&rot, (float)angleHeading * 360.0f / (float)NUMDEGREES * PI / 180.0f);
-			MatrixRotateX(&mat, (float)anglePitch * 50.0f / 414.0f * PI / 180.0f);
+			MatrixRotateY(&rot, static_cast<float>(angleHeading) * GAME_ANGLE_TO_RAD);
+			MatrixRotateX(&mat, static_cast<float>(anglePitch) * Y_UNIT_TO_OBJECT_PITCH_RAD);
 			MatrixMultiply(&rot, &rot, &mat);
 			MatrixTranslate(&trans, -(float)objectsRenderParams.params->viewer_x, 
 				-(float)objectsRenderParams.params->viewer_height, -(float)objectsRenderParams.params->viewer_y);
@@ -1904,7 +1924,7 @@ int D3DRenderProjectilesDraw(const ObjectsRenderParams& objectsRenderParams)
 		if (angle < -NUMDEGREES)
 			angle += NUMDEGREES;
 
-		MatrixRotateY(&rot, (float)angleHeading * 360.0f / (float)NUMDEGREES * PI / 180.0f);
+		MatrixRotateY(&rot, static_cast<float>(angleHeading) * GAME_ANGLE_TO_RAD);
 		MatrixTranspose(&rot, &rot);
 		MatrixTranslate(&mat, (float)pProjectile->motion.x, (float)pProjectile->motion.z,
 			(float)pProjectile->motion.y);
@@ -2461,13 +2481,15 @@ bool D3DObjectLightingCalc(
 	// Only apply visual flickering when sector_light <= 127 (dark/nighttime)
 	// sector_light > 127 means outdoor/daytime (ambient light affects sector)
 	// This matches the software renderer's GetLightPalette behavior in draw3d.c
+	// OF_FLASHING (used e.g. for detect-invisible reveal) must pulse regardless
+	// of daylight, so only OF_FLICKERING is daylight-gated.
 	int effectiveLightAdjust = pRNode->obj.lightAdjust;
 	if (light > 127 && (pRNode->obj.flags & OF_FLICKERING))
 	{
 		effectiveLightAdjust = 0;  // Disable visual flicker during daytime
 	}
 
-	if (pRNode->obj.flags & OF_FLICKERING)
+	if (pRNode->obj.flags & (OF_FLICKERING | OF_FLASHING))
 		light = GetLightPaletteIndex(intDistance, light, FINENESS, effectiveLightAdjust);
 	else
 		light = GetLightPaletteIndex(intDistance, light, FINENESS, 0);
@@ -2485,8 +2507,8 @@ bool D3DObjectLightingCalc(
 		bgra->g = std::min((float)COLOR_AMBIENT, bgra->g + (lastDistance * pDLight->color.g / COLOR_AMBIENT));
 		bgra->r = std::min((float)COLOR_AMBIENT, bgra->r + (lastDistance * pDLight->color.r / COLOR_AMBIENT));
 		
-		// Apply flickering adjustment to the combined lighting (base + dynamic)
-		if (pRNode->obj.flags & OF_FLICKERING)
+		// Apply flickering/flashing adjustment to the combined lighting (base + dynamic)
+		if (pRNode->obj.flags & (OF_FLICKERING | OF_FLASHING))
 		{
 			float adjustment = (float)pRNode->obj.lightAdjust / GetFlickerLevel();
 			bgra->b = std::min((float)COLOR_AMBIENT, bgra->b + (bgra->b * adjustment));

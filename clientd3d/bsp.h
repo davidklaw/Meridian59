@@ -121,10 +121,12 @@ typedef struct
    float x, y;
 } Pnt, Pnt2D, Vector2D;
 
-typedef struct
+struct Vector3D
 {
    float x, y, z;
-} Pnt3D, Vector3D;
+};
+
+using Pnt3D = Vector3D;
 
 typedef struct ObjectData
 {
@@ -132,6 +134,7 @@ typedef struct ObjectData
    DrawnObject draw;     // info used to draw object
    BYTE *ncones_ptr;     // pointer to # of cones this object occupies
    BYTE ncones;          // destination of ncones_ptr for first cone of obj
+   bool behind_translucent; // true if object is behind a translucent wall in BSP
 
    struct ObjectData *next;  // next in list of objects in BSP leaf
    struct BSPleaf *parent;   // leaf containing object

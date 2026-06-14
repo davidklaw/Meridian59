@@ -47,7 +47,7 @@
 typedef INT64 int64;
 
 #define MAJOR_REV 7   /* Major version of client program */
-#define MINOR_REV 36  /* Minor version of client program; must be in [0, 99] */
+#define MINOR_REV 37  /* Minor version of client program; must be in [0, 99] */
 
 #define VERSION_NUMBER(major_rev, minor_rev) ((major_rev * 100) + minor_rev)
 
@@ -100,6 +100,7 @@ M59EXPORT void _cdecl dprintf(const char *fmt,...);
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <bit>
 
 #include "resource.h"
 #include "proto.h"
