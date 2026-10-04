@@ -2825,7 +2825,7 @@
    Q_PLAYER_QUEST_MASK              = 0x3C000
 
    Q_PLAYER_INTRIGUING           = 0x40000           % player allowed to join factions
-   Q_PLAYER_GUILDMASTER           = 0x80000           % player is a guildmaster, and guild has colors
+   Q_PLAYER_GUILDMEMBER_SHIELDED = 0x80000           % player is a guild member, and guild has colors
 
    % quest player restrictions2
    %        used for restrictions which require parameter passing/setting

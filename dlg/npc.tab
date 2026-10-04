@@ -120,6 +120,7 @@ BarloqueBartender			~kMeidei says, "The Priestess Xiana can learn thee more of t
 BarloqueBartender			~kMeidei says, "Forsooth, the servants of Qor brings forth those horrid rats from the deep sewers to plague our lands."
 BarloqueBartender			~kBowing his head, Meidei silently mouths a prayer to Shal'ille.
 BarloqueBartender			~kMeidei glares at you with fire in his eyes and says, "Pray tell, dost thou follow the ways of Shal'ille?"
+BarloqueBartender	    ~kMeidei says, "Blacksmiths oft seek adventurers for their mining expeditions. Mayhap one of thy guild would take up such work. Have them ask of it."
 BarloqueBlacksmith		armor	~kFehr'loi Qan says, "I never use no armor, since I found out I can just think about a shield and it appears. Perhaps I could try to teach you."
 BarloqueBlacksmith		Barloque	~kFehr'loi Qan says, "Barloque is my new home. Uh, it may be too good fer the likes of me."
 BarloqueBlacksmith		buy	~kFehr'loi Qan says, "What you got? I'll look at weapons and armor. Maybe other interestin' stuff if you got any."
@@ -1396,6 +1397,9 @@ JasperBartender	MOOD_NEUTRAL		~kPietro says, "We like things the way they are in
 JasperBartender	MOOD_NEUTRAL		~kPietro says, "You don't want to freggin' start no trouble here."
 JasperBartender	MOOD_NEUTRAL		~kPietro says, "~IHic~I."
 JasperBartender	MOOD_NEUTRAL		~kPietro says, "What do you need?"
+JasperBartender	MOOD_NEUTRAL		~kPietro says, "Word is some blacksmith wants a guild for a mining expedition. Fool's errand. The mines were stripped years ago. But if your guild wants to waste its time, be my guest."
+JasperBartender	MOOD_GOOD		~kPietro says, "Blackschmithz want a guild for a ~Imining expedition~I, ~Ihic~I, and I hear theyz forge the whole guild a ~Icoat of armz~I for it! A COAT OF ARMZ! For ore from the minez! Them minez been ~Istripped~I for yearz, everybody knowz that.
+JasperBartender	MOOD_BAD		~kPietro grumbles, "Freggin' blackschmithz, runnin' their mouthz all day about needin' a guild for schome mining expedition. Like I care. Go bother ~Ithem~I about it, not me."
 JasperBlacksmith	MOOD_NOT_BAD	afiera	~kQuintor says, "Get out of my shop."
 JasperBlacksmith	MOOD_NOT_BAD	afiera d'xor	~kQuintor says, "You'd best talk to Afiera D'xor if that's who you want to talk about."
 JasperBlacksmith	MOOD_NOT_BAD	axe	~kQuintor says, "It's a great thing to have if you're gathering firewood, but to carry as a weapon? The graveyards in these hills are crowded with axe-carrying fools from the flatlands that went up against the orc scimitar."
@@ -2431,6 +2435,9 @@ MarionBartender	MOOD_NEUTRAL		~kTova winks at Morrigan good-naturedly.
 MarionBartender	MOOD_NEUTRAL		~kTova says, "I hear the Princess said that civilization in Barloque will last ten thousand years. She forgot to tell us when it's going to begin. Ha, ha, ha, ha!"
 MarionBartender	MOOD_NEUTRAL		~kTova says, "So this farmer walks into the tavern here, and asks me what time it is. I tell him it's four-fifteen. He narrows his eyes looking at me and says 'I must be going crazy, Tova. All day long I've been getting different answers!' Ha, ha, ha, ha!"
 MarionBartender	MOOD_NOT_BAD		~kTova says, "Nodes? I don't node nothing about nodes. How about you, Morrigan? Do you node about nodes? Ha, ha, ha, ha!!"
+MarionBartender	MOOD_NEUTRAL		~kTova says, "I hear the blacksmiths want a guild for a mining expedition, %SIRMADAM, and there's a coat of arms in it for them. Send one of your guild to ask. Just don't dig in Jasper, there's nothing left there but the folk of Jasper! Ha, ha, ha, ha!!"
+MarionBartender	MOOD_GOOD		~kTova says, "The blacksmiths are after a guild for a mining expedition, %SIRMADAM, and they'll forge them a coat of arms for it! Morrigan says he'd go, but the only thing he's ever dug up is an excuse! Ha, ha, ha, ha!!"
+MarionBartender	MOOD_BAD		~kTova grumbles, "Blacksmiths wanting a guild for some mining expedition. Go bother them about it."
 MarionBlacksmith	MOOD_NOT_BAD	barloque	~kColhorr says, "Broke? What's broke? Let's have a look, maybe I can fix it."
 MarionBlacksmith	MOOD_NOT_BAD	broke	~kColhorr says, "Ah, well... it's a fair city, grand actually. Aye it's a grand city, certainly grand, grand grand grand capital of Meridian."
 MarionBlacksmith	MOOD_BAD	bye	~kColhorr mumbles something to himself.

@@ -336,12 +336,11 @@ CheckPlayerCriteria( quester_wannabe = $ )
       return FALSE;
    }
    
-   if  ( iPlayerRestrict & Q_PLAYER_GUILDMASTER ) AND
+   if  ( iPlayerRestrict & Q_PLAYER_GUILDMEMBER_SHIELDED ) AND
          ( send(quester_wannabe, @GetGuild) = $ or
-         (send(send(quester_wannabe, @GetGuild),@getguildmaster) <> quester_wannabe) or
          (not send(send(quester_wannabe, @GetGuild),@HasGuildColors)) )
    {
-      if bDebug { debug("failed Q_PLAYER_GUILDMASTER."); }
+      if bDebug { debug("failed Q_PLAYER_GUILDMEMBER_SHIELDED."); }
       return FALSE;
    }
 

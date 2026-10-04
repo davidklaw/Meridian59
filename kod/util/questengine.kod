@@ -1684,21 +1684,21 @@ Recreate()
    % QST_ID_GUILDSHIELD
    plQuestTemplates = cons([  piDefaultNumPlayers,\
 			      piDefaultQuestType,\
-			      0,\
+			      Q_PLAYER_NOTTRIED_RECENTLY | Q_PLAYER_GUILDMASTER,\
 			      [ 18, 19 ],\
 			      30,\
 			      [],\
 			      100,\
-			      [ [ Q_R2_QN_ASSIGNABLE, FALSE ], [ Q_R2_IS_GUILD_MEMBER_OF, $ ] ]
+			      [ ]
 			                                    ], plQuestTemplates );
    % QST_ID_GUILDSHIELD_INTRO
    plQuestTemplates = cons([  piDefaultNumPlayers,\
 			      piDefaultQuestType,\
 			      Q_PLAYER_NOTTRIED_RECENTLY | Q_PLAYER_GUILDMASTER,\
 			      [ 20 ],\
-			      15,\
+			      0,\
 			      [],\
-			      100,
+			      0,
 			      [ ]
 			                                    ], plQuestTemplates );
 	% QST_ID_LUTE
